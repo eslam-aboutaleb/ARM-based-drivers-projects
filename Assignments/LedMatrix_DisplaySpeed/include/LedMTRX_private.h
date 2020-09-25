@@ -7,6 +7,8 @@
 #ifndef LED_MTRX_PRIVATE_H
 #define LED_MTRX_PRIVATE_H
 
+#define LEDMTRX_DATA_BITSIZE						((sizeof(char) *8) - 1)
+
 #define COLS_CATHODE                   0
 #define COLS_ANODE                     1
 

@@ -73,7 +73,7 @@ static void LedMtrx_vSetRowVals(uint8 Copy_u8Val)
 
 		Local_u8Temp = (GET_BIT(Copy_u8Val,Local_u8BitIndex));
 		GPIO_vWritePortPin(LedMtrxRows_Map[Local_u8RowIndex].LedMtrx_Port,LedMtrxRows_Map[Local_u8RowIndex].LedMtrx_Pin,Local_u8Temp);
-		if(Local_u8BitIndex == 7)
+		if(Local_u8BitIndex == LEDMTRX_DATA_BITSIZE)
 		{
 			Local_u8BitIndex = 0;
 		}
@@ -194,7 +194,7 @@ void LedMtrx_vSetSpeed(uint8 Copy_u8SpeedCmd)
 		{
 			return;
 		}
-		u8DisplaySpeed -= LEDMTRX_SPEEDSTEP;
+		u8DisplaySpeed += LEDMTRX_SPEEDSTEP;
 		break;
 
 	case LEDMTRX_INCSPEED:
@@ -202,7 +202,7 @@ void LedMtrx_vSetSpeed(uint8 Copy_u8SpeedCmd)
 		{
 			return;
 		}
-		u8DisplaySpeed += LEDMTRX_SPEEDSTEP;
+		u8DisplaySpeed -= LEDMTRX_SPEEDSTEP;
 		break;
 
 	default:
