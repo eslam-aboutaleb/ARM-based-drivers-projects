@@ -7,9 +7,9 @@
 #ifndef NVIC_INTERFACE_H
 #define NVIC_INTERFACE_H
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 /*NVIC Data structures*/
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
 /*NVIC interrupt indexes*/
 typedef enum
@@ -102,17 +102,17 @@ typedef enum
 
 
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 /*Functions prototypes*/
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
 void NVIC_vPriorityGroupInit(uint32 Copy_u32PriorityGroup);
-uint8 NVIC_u8EnableInterrupt(IRQnum_t Copy_xIntIndex);
-uint8 NVIC_u8DisableInterrupt(IRQnum_t Copy_xIntIndex);
-uint8 NVIC_u8SetPendingFlag(IRQnum_t Copy_xIntIndex);
-uint8 NVIC_u8ClearPendingFlag(IRQnum_t Copy_xIntIndex);
-uint8 NVIC_u8ReadIntState(IRQnum_t Copy_xIntIndex);
+Error_Status NVIC_xEnableInterrupt(IRQnum_t Copy_xIntIndex);
+Error_Status NVIC_xDisableInterrupt(IRQnum_t Copy_xIntIndex);
+Error_Status NVIC_xSetPendingFlag(IRQnum_t Copy_xIntIndex);
+Error_Status NVIC_xClearPendingFlag(IRQnum_t Copy_xIntIndex);
+Error_Status NVIC_xReadIntState(IRQnum_t Copy_xIntIndex, uint8 *pu8IntState);
 IRQnum_t NVIC_xCheck_CurrentInt(void);
-uint8 NVIC_u8Setpriority(IRQnum_t Copy_xIntIndex , uint8 Copy_u8GroupPriority , uint8 Copy_u8SubPriority);
+Error_Status NVIC_xSetpriority(IRQnum_t Copy_xIntIndex , uint8 Copy_u8GroupPriority , uint8 Copy_u8SubPriority);
 
 #endif /*NVIC_INTERFACE_H*/

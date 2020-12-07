@@ -8,7 +8,9 @@
 #include "BIT_MATH.h"
 #include "utils.h"
 #include "NVIC_interface.h"
+#include "NVIC_config.h"
 #include "NVIC_private.h"
+#include "NVIC_reg.h"
 #include "SCB_private.h"
 
 /*Variables*/
@@ -16,9 +18,9 @@
 
 static uint32 Static_u32CurrentPriorityGroup; /* static global variable to indicate the current Priority Group */
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 /*Functions definitions*/
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
 void NVIC_vPriorityGroupInit(uint32 Copy_u32PriorityGroup)
 {
@@ -28,102 +30,76 @@ void NVIC_vPriorityGroupInit(uint32 Copy_u32PriorityGroup)
 	SCB->AIRCR = Static_u32CurrentPriorityGroup;
 }
 
-uint8 NVIC_u8EnableInterrupt(IRQnum_t Copy_xIntIndex)
+/************************************************************************************************************* */
+
+Error_Status NVIC_xEnableInterrupt(IRQnum_t Copy_xIntIndex)
 {
-	if(Copy_xIntIndex <=31)
-	{
-		SET_BIT(NVIC->ISER[0] , Copy_xIntIndex);
-	}
-	else if(Copy_xIntIndex <=59)
-	{
-		SET_BIT(NVIC->ISER[1] , Copy_xIntIndex);
-	}
-	else
+	if(NVIC_IS_VALID_IRQN(Copy_xIntIndex) == E_NOK)
 	{
 		return E_NOK;
 	}
+	SET_BIT(NVIC->ISER[Copy_xIntIndex/32] , Copy_xIntIndex);
+
 	return E_OK;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
-uint8 NVIC_u8DisableInterrupt(IRQnum_t Copy_xIntIndex)
+Error_Status NVIC_xDisableInterrupt(IRQnum_t Copy_xIntIndex)
 {
-	if(Copy_xIntIndex <=31)
-	{
-		SET_BIT(NVIC->ICER[0] , Copy_xIntIndex);
-	}
-	else if(Copy_xIntIndex <=59)
-	{
-		SET_BIT(NVIC->ICER[1] , Copy_xIntIndex);
-	}
-	else
+	if(NVIC_IS_VALID_IRQN(Copy_xIntIndex) == E_NOK)
 	{
 		return E_NOK;
 	}
+
+	SET_BIT(NVIC->ICER[Copy_xIntIndex/32] , Copy_xIntIndex);
+
 	return E_OK;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
-uint8 NVIC_u8SetPendingFlag(IRQnum_t Copy_xIntIndex)
+Error_Status NVIC_xSetPendingFlag(IRQnum_t Copy_xIntIndex)
 {
-	if(Copy_xIntIndex <=31)
-	{
-		SET_BIT(NVIC->ISPR[0] , Copy_xIntIndex);
-	}
-	else if(Copy_xIntIndex <=59)
-	{
-		SET_BIT(NVIC->ISPR[1] , Copy_xIntIndex);
-	}
-	else
+	if(NVIC_IS_VALID_IRQN(Copy_xIntIndex) == E_NOK)
 	{
 		return E_NOK;
 	}
+
+	SET_BIT(NVIC->ISPR[Copy_xIntIndex/32] , Copy_xIntIndex);
+
 	return E_OK;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
-uint8 NVIC_u8ClearPendingFlag(IRQnum_t Copy_xIntIndex)
+Error_Status NVIC_xClearPendingFlag(IRQnum_t Copy_xIntIndex)
 {
-	if(Copy_xIntIndex <=31)
-	{
-		SET_BIT(NVIC->ICPR[0] , Copy_xIntIndex);
-	}
-	else if(Copy_xIntIndex <=59)
-	{
-		SET_BIT(NVIC->ICPR[1] , Copy_xIntIndex);
-	}
-	else
+	if(NVIC_IS_VALID_IRQN(Copy_xIntIndex) == E_NOK)
 	{
 		return E_NOK;
 	}
+
+	SET_BIT(NVIC->ICPR[Copy_xIntIndex/32] , Copy_xIntIndex);
+
 	return E_OK;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
-uint8 NVIC_u8ReadIntState(IRQnum_t Copy_xIntIndex)
+Error_Status NVIC_xReadIntState(IRQnum_t Copy_xIntIndex, uint8 *pu8IntState)
 {
-	uint8 LOC_u8State=0;
-	if (Copy_xIntIndex <= 31)
+	if(NVIC_IS_VALID_IRQN(Copy_xIntIndex) == E_NOK)
 	{
-		LOC_u8State = GET_BIT (NVIC->IABR[0], Copy_xIntIndex);
+		return E_NOK;
 	}
-	else if (Copy_xIntIndex <= 59)
-	{
-		Copy_xIntIndex -=32;
-		LOC_u8State = GET_BIT (NVIC->IABR[1], Copy_xIntIndex);
-	}
-	else
-	{
-		/*Returns E_NOK*/
-	}
-	return LOC_u8State;
+
+	*pu8IntState = GET_BIT (NVIC->IABR[Copy_xIntIndex/32], Copy_xIntIndex);
+
+	return E_OK;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
 IRQnum_t NVIC_xCheck_CurrentInt(void)
 {
@@ -161,13 +137,12 @@ IRQnum_t NVIC_xCheck_CurrentInt(void)
 	return LOC_u8Index;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+/************************************************************************************************************* */
 
-
-uint8 NVIC_u8Setpriority(IRQnum_t Copy_xIntIndex , uint8 Copy_u8GroupPriority , uint8 Copy_u8SubPriority)
+Error_Status NVIC_xSetpriority(IRQnum_t Copy_xIntIndex , uint8 Copy_u8GroupPriority , uint8 Copy_u8SubPriority)
 {
 	/*Check if the index is non-maskable interrupt OR more than the number of available interrupts*/
-	if(Copy_xIntIndex < 0 || Copy_xIntIndex > 60)
+	if(Copy_xIntIndex < 0 || Copy_xIntIndex > NVIC_N_IRQNS)
 	{
 		return E_NOK;
 	}

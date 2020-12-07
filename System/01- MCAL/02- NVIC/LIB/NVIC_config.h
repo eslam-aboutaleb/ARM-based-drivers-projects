@@ -8,6 +8,7 @@
 #define NVIC_CONFIG_H
 
 
+#define NVIC_N_IRQNS									59
 
 
 #endif /*NVIC_CONFIG_H*/

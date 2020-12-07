@@ -255,24 +255,46 @@ static void RCC_vPLL_Clock_Source(uint8 Copy_xPLL_Source)
 	switch(Copy_xPLL_Source)
 	{
 	case PLL_SRC_HSE_NOT_DEVIDED:
-		CLEAR_BIT(RCC->CFGR,17);
+		/* Set HSEON BIT */
+		SET_BIT(RCC->CR,16);
+		/*Wait until external clock is stable*/
+		while(BIT_IS_CLEAR(RCC->CR,17));
+
 		/*Select HSE as PLL source*/
+		CLEAR_BIT(RCC->CFGR,17);
 		SET_BIT(RCC->CFGR,16);
 		/*Wait until external clock is stable*/
 		while(BIT_IS_CLEAR(RCC->CR,17));
 		break;
 	case PLL_SRC_HSE_DEVIDED_BY_2:
-		SET_BIT(RCC->CFGR,17);
+		/* Set HSEON BIT */
+		SET_BIT(RCC->CR,16);
+		/*Wait until external clock is stable*/
+		while(BIT_IS_CLEAR(RCC->CR,17));
+
 		/*Select HSE as PLL source*/
+		SET_BIT(RCC->CFGR,17);
 		SET_BIT(RCC->CFGR,16);
 		/*Wait until external clock is stable*/
 		while(BIT_IS_CLEAR(RCC->CR,17));
 		break;
 	case PLL_SRC_HSI_DEVIDED_BY_2:
+		/*Set HSION BIT*/
+		SET_BIT(RCC->CR,0);
+
+		/*Wait until the clock is stable*/
+		while(BIT_IS_CLEAR(RCC->CR,1));
+
 		CLEAR_BIT(RCC->CFGR,16);
 		break;
 	default:
-		CLEAR_BIT(RCC->CFGR,16);
+		/* In case of errors make the default clock source for PLL is internal clock */
+		/*Set HSION BIT*/
+		SET_BIT(RCC->CR,0);
+
+		/*Wait until the clock is stable*/
+		while(BIT_IS_CLEAR(RCC->CR,1));
+
 		break;
 
 
