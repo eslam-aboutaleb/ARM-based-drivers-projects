@@ -38,7 +38,7 @@ Error_Status NVIC_xEnableInterrupt(IRQnum_t Copy_xIntIndex)
 	{
 		return E_NOK;
 	}
-	SET_BIT(NVIC->ISER[Copy_xIntIndex/32] , Copy_xIntIndex);
+	NVIC->ISER[Copy_xIntIndex/32] = 1 << (Copy_xIntIndex % 32);
 
 	return E_OK;
 }
@@ -51,8 +51,7 @@ Error_Status NVIC_xDisableInterrupt(IRQnum_t Copy_xIntIndex)
 	{
 		return E_NOK;
 	}
-
-	SET_BIT(NVIC->ICER[Copy_xIntIndex/32] , Copy_xIntIndex);
+	NVIC->ICER[Copy_xIntIndex/32] = 1 << (Copy_xIntIndex % 32);
 
 	return E_OK;
 }
@@ -65,8 +64,7 @@ Error_Status NVIC_xSetPendingFlag(IRQnum_t Copy_xIntIndex)
 	{
 		return E_NOK;
 	}
-
-	SET_BIT(NVIC->ISPR[Copy_xIntIndex/32] , Copy_xIntIndex);
+	NVIC->ISPR[Copy_xIntIndex/32] = 1 << (Copy_xIntIndex % 32);
 
 	return E_OK;
 }
@@ -79,8 +77,7 @@ Error_Status NVIC_xClearPendingFlag(IRQnum_t Copy_xIntIndex)
 	{
 		return E_NOK;
 	}
-
-	SET_BIT(NVIC->ICPR[Copy_xIntIndex/32] , Copy_xIntIndex);
+	NVIC->ICPR[Copy_xIntIndex/32] = 1 << (Copy_xIntIndex % 32);
 
 	return E_OK;
 }
@@ -94,7 +91,7 @@ Error_Status NVIC_xReadIntState(IRQnum_t Copy_xIntIndex, uint8 *pu8IntState)
 		return E_NOK;
 	}
 
-	*pu8IntState = GET_BIT (NVIC->IABR[Copy_xIntIndex/32], Copy_xIntIndex);
+	*pu8IntState = GET_BIT (NVIC->IABR[Copy_xIntIndex/32], (Copy_xIntIndex%32));
 
 	return E_OK;
 }
@@ -105,25 +102,12 @@ IRQnum_t NVIC_xCheck_CurrentInt(void)
 {
 	/*Check from the first maskable interrupt*/
 	IRQnum_t LOC_u8Index=0;
-	IRQnum_t LOC_u8Index_2=0;
 	uint8 LOC_u8State=0;
 	/*Check all the interrupts if there is active one or not*/
 	for(LOC_u8Index=0;LOC_u8Index<=59;LOC_u8Index++)
 	{
-		if (LOC_u8Index <= 31)
-		{
-			LOC_u8State = GET_BIT (NVIC->IABR[0], LOC_u8Index);
-		}
-		else if (LOC_u8Index <= 59)
-		{
-			LOC_u8Index_2 = LOC_u8Index;
-			LOC_u8Index_2 -=32;
-			LOC_u8State = GET_BIT (NVIC->IABR[1], LOC_u8Index_2);
-		}
-		else
-		{
-			/*No Action*/
-		}
+		LOC_u8State = GET_BIT (NVIC->IABR[LOC_u8Index/32], LOC_u8Index%32);
+
 		/*If there is an active flag break the loop*/
 		if(LOC_u8State == 1)
 		{
