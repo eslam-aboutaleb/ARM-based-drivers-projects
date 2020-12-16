@@ -87,6 +87,13 @@
 #define APB2_DIVIDED_BY_8                                                  (0x6)
 #define APB2_DIVIDED_BY_16                                                 (0x7)
 
+/* ADC Prescaler */
+
+#define RCC_ADC_PRESCALER_2													0x00000000
+#define RCC_ADC_PRESCALER_4													0x00004000
+#define RCC_ADC_PRESCALER_6													0x00008000
+#define RCC_ADC_PRESCALER_8													0x0000C000
+
 /************************************************************************************************************* */
 /* MCO data macros*/
 /************************************************************************************************************* */
@@ -142,7 +149,7 @@ typedef enum
 	RCC_DAC_CLOCK,
 
 	/*RCC APB2ENR Peripherals*/
-	RCC_AFIO_CLOCK = 0,
+	RCC_AFIO_CLOCK  = 0,
 	RCC_GPIOA_CLOCK = 2,
 	RCC_GPIOB_CLOCK,
 	RCC_GPIOC_CLOCK,
@@ -209,7 +216,7 @@ void RCC_vClockInit(RCC_Config_t *RCC_Config);
 void RCC_vSetCLKPeripheral(uint8 Copy_xBus,RCC_Peripheral_t Copy_xPrephiral,uint8 Copy_xState);
 void RCC_vMCO(uint8 Copy_xMCO_Source);
 uint8 RCC_xGetClkSource(void);
-
+Error_Status RCC_xSetADC_PreScaler(uint32 Copy_u32Prescaler);
 
 
 

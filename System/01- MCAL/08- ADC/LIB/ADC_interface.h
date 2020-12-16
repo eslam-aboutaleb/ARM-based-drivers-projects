@@ -160,6 +160,9 @@ Error_Status ADC_xChannelCnfg(ADC_TypeDef *ADCx,uint8 Copy_u8ChNum,uint32 Copy_u
 Error_Status ADC_xEnable(ADC_TypeDef* ADCx);
 /************************************************************************************************************* */
 
+uint16 ADC_u16GetSingleConv(ADC_TypeDef *ADCx,uint8 Copy_u8Channel,uint8 Copy_u8SamplingTime);
+/************************************************************************************************************* */
+
 Error_Status ADC_xSetADCState(ADC_TypeDef *ADCx, ADC_State_t Copy_xState);
 /************************************************************************************************************* */
 

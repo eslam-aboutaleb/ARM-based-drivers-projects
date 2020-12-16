@@ -243,6 +243,18 @@ static void RCC_vClockSource(uint8 Copy_xClock)
 }
 
 /************************************************************************************************************* */
+Error_Status RCC_xSetADC_PreScaler(uint32 Copy_u32Prescaler)
+{
+	if(RCC_IS_VALID_ADC_PRESCALER(Copy_u32Prescaler) != E_OK)
+	{
+		return E_NOK;
+	}
+	RCC->CFGR |= Copy_u32Prescaler;
+
+	return E_OK;
+}
+
+/************************************************************************************************************* */
 /*Local functions*/
 /************************************************************************************************************* */
 
