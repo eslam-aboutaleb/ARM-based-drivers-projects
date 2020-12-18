@@ -8,28 +8,20 @@
 #ifndef RCC_PRIVATE_H
 #define RCC_PRIVATE_H
 /************************************************************************************************************* */
+/* RCC Errors checkers */
+#define RCC_IS_VALID_ADC_PRESCALER(Prescaler)						((Prescaler == RCC_ADC_PRESCALER_2)|| \
+																	(Prescaler == RCC_ADC_PRESCALER_4)|| \
+																	(Prescaler == RCC_ADC_PRESCALER_6)|| \
+																	(Prescaler == RCC_ADC_PRESCALER_4))
 
-/*RCC base address*/
-#define RCC_BASE_ADDRESS    0x40021000
+/************************************************************************************************************* */
+/* Local functions prototypes */
+/************************************************************************************************************* */
 
-/*RCC registers*/
-typedef struct
-{
-  volatile uint32 CR;
-  volatile uint32 CFGR;
-  volatile uint32 CIR;
-  volatile uint32 APB2RSTR;
-  volatile uint32 APB1RSTR;
-  volatile uint32 AHBENR;
-  volatile uint32 APB2ENR;
-  volatile uint32 APB1ENR;
-  volatile uint32 BDCR;
-  volatile uint32 CSR;
-
-} RCC_TypeDef;
-
-
-#define RCC ((RCC_TypeDef*) RCC_BASE_ADDRESS)
+static void RCC_vClockSource(uint8 Copy_xClock);
+static void RCC_vPLL_Clock_Source(uint8 Copy_xPLL_Source);
+static void RCC_vPLL_Mul(uint8 Copy_xMul_Factor);
+static void RCC_vBus_Prescaler(RCC_Config_t *Copy_RCC_Config);
 
 
 #endif
