@@ -17,10 +17,10 @@ typedef struct{
 /************************************************************************************************************* */
 
 #define I2C_SCL_PORT										GPIOB
-#define	I2C_SCL_PIN											GPIO_PIN_10
+#define	I2C_SCL_PIN											GPIO_PIN_6
 
 #define I2C_SDA_PORT										GPIOB
-#define	I2C_SDA_PIN											GPIO_PIN_11
+#define	I2C_SDA_PIN											GPIO_PIN_7
 /************************************************************************************************************* */
 
 I2C_PinMap I2C_Pins[2] = {

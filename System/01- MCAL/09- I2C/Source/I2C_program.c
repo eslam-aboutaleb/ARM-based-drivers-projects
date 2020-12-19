@@ -18,58 +18,87 @@
 #include "I2C_config.h"
 
 /************************************************************************************************************* */
-										/* Public functions definitions */
+/* Public functions definitions */
 /************************************************************************************************************* */
-
+//#define MASTER				1
+#define SLAVE				1
 Error_Status I2C_xInit(I2C_TypeDef* I2Cx , I2C_InitTypeDef *pxI2C_Cnfg)
 {
 	Error_Status Local_xErrorStatus	=	E_NOK;
-
-	/* Configure I2C clock settings */
-	Local_xErrorStatus	=	I2C_xSetClkSettings(I2Cx , pxI2C_Cnfg->I2C_ClockSpeed, pxI2C_Cnfg->I2C_DutyCycle);
-
-	/* Clear CR1 register */
-	I2Cx->CR1 &= CR1_CLEAR_MASK;
-	/* Configure I2C mode */
-	Local_xErrorStatus	=	I2C_xSetMode(I2Cx , pxI2C_Cnfg->I2C_Mode);
-
-	/* Configure I2C ACK state */
-	Local_xErrorStatus	=	I2C_xSetACK(I2Cx , pxI2C_Cnfg->I2C_Ack);
-
-	/* Configure I2C Address 1 */
-	Local_xErrorStatus	=	I2C_xSetAddress1(I2Cx, pxI2C_Cnfg->I2C_OwnAddress1,pxI2C_Cnfg->I2C_AddressLength);
-
-	/* Configure I2C Address 2 */
-	Local_xErrorStatus	=	I2C_xSetAddress2(I2Cx, pxI2C_Cnfg->I2C_OwnAddress2,pxI2C_Cnfg->I2C_DualAddressMode);
 
 	/* Initialize I2C clock pin */
 	GPIO_vInitPortPin(I2C_Pins[0].I2C_Port,I2C_Pins[0].I2C_Pin,GPIO_PIN_ALF_OUTPUT_OPENDRAIN_MODE_10MHZ);
 	/* Initialize I2C SDA pin */
 	GPIO_vInitPortPin(I2C_Pins[1].I2C_Port,I2C_Pins[1].I2C_Pin,GPIO_PIN_ALF_OUTPUT_OPENDRAIN_MODE_10MHZ);
 
+	/* Make sure the I2C is disabled */
+	I2C_xSetState(I2Cx,DISABLE);
+
+	/* Configure I2C clock settings */
+	Local_xErrorStatus	=	I2C_xSetClkSettings(I2Cx , pxI2C_Cnfg->I2C_ClockSpeed, pxI2C_Cnfg->I2C_DutyCycle);
+
+	/* Configure I2C DMA requests state */
+	Local_xErrorStatus	=	I2C_xCnfgDMA(I2Cx , pxI2C_Cnfg->I2C_DMA);
+
+	/* Configure I2C Address 1 */
+	Local_xErrorStatus	=	I2C_xSetAddress1(I2Cx, pxI2C_Cnfg->I2C_OwnAddress1,pxI2C_Cnfg->I2C_AddressLength);
+
+	/* Configure I2C mode */
+	Local_xErrorStatus	=	I2C_xSetMode(I2Cx , pxI2C_Cnfg->I2C_Mode);
+
+	/* Configure I2C ACK state */
+	Local_xErrorStatus	=	I2C_xSetACK(I2Cx , pxI2C_Cnfg->I2C_Ack);
+
+	/* Configure I2C Address 2 */
+	Local_xErrorStatus	=	I2C_xSetAddress2(I2Cx, pxI2C_Cnfg->I2C_OwnAddress2,pxI2C_Cnfg->I2C_DualAddressMode);
+
+	/* Configure I2C general call */
+	Local_xErrorStatus	=	I2C_xSetGenralCall(I2Cx,pxI2C_Cnfg->I2C_GeneralCall);
+
+	/* Configure I2C Interrupts */
+	Local_xErrorStatus	=	I2C_xCnfgInterrupts(I2Cx,&(pxI2C_Cnfg->I2C_Interrupts));
+
 	/* Enable selected I2C */
-	Local_xErrorStatus	=	I2C_xSetState(I2Cx , ENABLE);
+	Local_xErrorStatus	=	I2C_xSetState(I2Cx , pxI2C_Cnfg->I2C_InitialState);
 
 	return Local_xErrorStatus;
 }
 
 /************************************************************************************************************* */
 
+Flag_Status I2C_xIsBusy(I2C_TypeDef *I2Cx)
+{
+	Flag_Status Local_xFlagStatus	=	E_NOK;
+	Local_xFlagStatus	=	I2C_xGetFlagStatus(I2Cx,I2C_FLAG_BUSY);
+
+	return Local_xFlagStatus;
+}
 void I2C_vInitStruct(I2C_InitTypeDef *pxI2C_Cnfg , uint16 Copy_u16NodeAdd)
 {
 	/*---------------- Reset I2C init structure parameters values ----------------*/
 	/* initialize the I2C_ClockSpeed member */
-	pxI2C_Cnfg->I2C_ClockSpeed = 5000;
+	pxI2C_Cnfg->I2C_ClockSpeed		=	50000;
 	/* Initialize the I2C_Mode member */
-	pxI2C_Cnfg->I2C_Mode = I2C_MODE_I2C;
+	pxI2C_Cnfg->I2C_Mode			=	I2C_MODE_I2C;
 	/* Initialize the I2C_DutyCycle member */
-	pxI2C_Cnfg->I2C_DutyCycle = I2C_DUTY_CYCLE_2;
+	pxI2C_Cnfg->I2C_DutyCycle		=	I2C_DUTY_CYCLE_2;
 	/* Initialize the I2C_OwnAddress1 member */
-	pxI2C_Cnfg->I2C_OwnAddress1 = Copy_u16NodeAdd;
+	pxI2C_Cnfg->I2C_OwnAddress1		=	Copy_u16NodeAdd;
 	/* Initialize the I2C_Ack member */
-	pxI2C_Cnfg->I2C_Ack = DISABLE;
+#ifdef SLAVE
+	pxI2C_Cnfg->I2C_Ack				=	ENABLE;
+	pxI2C_Cnfg->I2C_Interrupts.I2C_EventIntState	=	ENABLE;
+#endif
+
+#ifdef MASTER
+	pxI2C_Cnfg->I2C_Ack				=	DISABLE;
+#endif
 	/* Initialize the I2C_AcknowledgedAddress member */
-	pxI2C_Cnfg->I2C_AddressLength = I2C_ADDRESS_7BIT;
+	pxI2C_Cnfg->I2C_AddressLength	=	I2C_ADDRESS_7BIT;
+	/* Initialize GCALL */
+	pxI2C_Cnfg->I2C_GeneralCall		=	DISABLE;
+	/* initial state for I2C */
+	pxI2C_Cnfg->I2C_InitialState	=	ENABLE;
 }
 
 /************************************************************************************************************* */
@@ -150,6 +179,19 @@ Error_Status I2C_xMasterRead(I2C_TypeDef* I2Cx,uint16 Copy_u16SlaveAddress,uint8
 
 /************************************************************************************************************* */
 
+Flag_Status I2C_xSlaveCheckAddressMatch(I2C_TypeDef* I2Cx)
+{
+	/* Wait till the address flag is SET */
+	while(I2C_xGetFlagStatus(I2Cx,I2C_FLAG_ADDR) != E_OK)
+	{
+		asm("NOP");
+	}
+
+	return E_OK;
+}
+
+/************************************************************************************************************* */
+
 Error_Status I2C_xSlaveWrite(I2C_TypeDef* I2Cx,uint8 *pu8Data,uint8 Copy_u8Size)
 {
 	Error_Status Local_xErrorStatus =	E_NOK;
@@ -210,16 +252,16 @@ Error_Status I2C_xGenerateStart(I2C_TypeDef* I2Cx, FunctionalState Copy_xStartSt
 	switch(Copy_xStartState)
 	{
 	case DISABLE:
-		CLEAR_BIT(I2Cx->CR1 , 9);
+		CLEAR_BIT(I2Cx->CR1 , 8);
 		break;
 	case ENABLE:
-		SET_BIT(I2Cx->CR1 , 9);
-		/* Wait until start bit is generated */
+		SET_BIT(I2Cx->CR1 , 8);
+
+		/* Wait till the start bit flag is SET */
 		while(I2C_xGetFlagStatus(I2Cx,I2C_FLAG_SB) != E_OK)
 		{
 			asm("NOP");
 		}
-
 		/* Read the status register to clear start bit flag */
 		I2C_xReadRegister(I2Cx,I2C_REGISTER_SR1,&StatusRegisterVal);
 		break;
@@ -238,10 +280,10 @@ Error_Status I2C_xGenerateStop(I2C_TypeDef* I2Cx, FunctionalState Copy_xStartSta
 	switch(Copy_xStartState)
 	{
 	case DISABLE:
-		CLEAR_BIT(I2Cx->CR1 , 8);
+		CLEAR_BIT(I2Cx->CR1 , 9);
 		break;
 	case ENABLE:
-		SET_BIT(I2Cx->CR1 , 8);
+		SET_BIT(I2Cx->CR1 , 9);
 		break;
 	default:
 		return E_NOK;
@@ -458,7 +500,54 @@ Error_Status I2C_xReadRegister(I2C_TypeDef* I2Cx, uint8 Copy_u8Register ,uint16 
 }
 
 /************************************************************************************************************* */
-										/* Local functions definitions */
+
+Error_Status I2C_xCnfgInterrupts(I2C_TypeDef *I2Cx, I2C_IntState_t *I2C_IntState)
+{
+	Error_Status Local_xErrorStatus	=	E_OK;
+
+	switch (I2C_IntState->I2C_BufferIntState)
+	{
+	case DISABLE:
+		CLEAR_BIT(I2Cx->CR2,10);
+		break;
+	case ENABLE:
+		SET_BIT(I2Cx->CR2,10);
+		break;
+	default:
+		Local_xErrorStatus	=	E_NOK;
+		break;
+	}
+
+	switch (I2C_IntState->I2C_EventIntState)
+	{
+	case DISABLE:
+		CLEAR_BIT(I2Cx->CR2,9);
+		break;
+	case ENABLE:
+		SET_BIT(I2Cx->CR2,9);
+		break;
+	default:
+		Local_xErrorStatus	=	E_NOK;
+		break;
+	}
+
+	switch (I2C_IntState->I2C_ErrorIntState)
+	{
+	case DISABLE:
+		CLEAR_BIT(I2Cx->CR2,8);
+		break;
+	case ENABLE:
+		SET_BIT(I2Cx->CR2,8);
+		break;
+	default:
+		Local_xErrorStatus	=	E_NOK;
+		break;
+	}
+
+	return Local_xErrorStatus;
+}
+/************************************************************************************************************* */
+/* Local functions definitions */
 /************************************************************************************************************* */
 
 static Error_Status I2C_xSetClkSettings(I2C_TypeDef* I2Cx , uint32 Copy_u32ClockSpeed ,uint16 Copy_u16DutyCycle)
@@ -538,8 +627,9 @@ static Error_Status I2C_xSetClkSettings(I2C_TypeDef* I2Cx , uint32 Copy_u32Clock
 	}
 
 	/* Assign the result to clock control register */
-	I2Cx->CCR = Local_u16Reseult;
-
+	//	I2Cx->CCR = Local_u16Reseult;
+	I2Cx -> CCR |= 40;
+	SET_BIT(I2Cx->CR1 , 0);
 
 	return Local_xErrorStatus;
 }
@@ -574,7 +664,7 @@ static Error_Status I2C_xSetAddress1(I2C_TypeDef* I2Cx , uint16 Copy_u16Address 
 	}
 
 	/* Clear Address bits */
-	I2Cx->OAR1 &= ~(0x7F << 1);
+	I2Cx->OAR1 &= 0xFF01 ;
 	switch(Copy_u16AddressLength)
 	{
 	case I2C_ADDRESS_7BIT:
@@ -612,4 +702,38 @@ static Error_Status I2C_xSetAddress2(I2C_TypeDef* I2Cx , uint16 Copy_u16Address 
 	}
 
 	return E_OK;
+}
+
+/************************************************************************************************************* */
+
+static Error_Status I2C_xCnfgDMA(I2C_TypeDef* I2Cx , FunctionalState Copy_xDMA_State)
+{
+	switch(Copy_xDMA_State)
+	{
+	case DISABLE:
+		CLEAR_BIT(I2Cx->CR2,11);
+		break;
+	case ENABLE:
+		SET_BIT(I2Cx->CR2,11);
+		break;
+	default:
+		return E_NOK;
+		break;
+	}
+
+	return E_OK;
+}
+
+/************************************************************************************************************* */
+												/* I2C ISRs */
+/************************************************************************************************************* */
+void I2C1_EV_IRQHandler(void)
+{
+	uint16 StatusRegVal	=	E_NOK;
+	if(I2C_xGetFlagStatus(I2C1,I2C_FLAG_ADDR)	==	E_OK)
+	{
+		I2C_xReadRegister(I2C1,I2C_REGISTER_SR1,&StatusRegVal);
+
+		UN_USED(StatusRegVal);
+	}
 }

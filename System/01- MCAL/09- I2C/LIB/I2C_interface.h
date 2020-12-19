@@ -25,7 +25,7 @@
 /************************************************************************************************************* */
 
 #define I2C_ACK_ENABLE                  	((uint16)0x0400)
-#define I2C_ACK_DISABLE                	 	((uint16)0x0000)
+#define I2C_ACK_DISABLE                	 	((uint16)0xFBFF)
 /************************************************************************************************************* */
 
 #define I2C_ADDRESS_7BIT    				((uint16)0x4000)
@@ -83,10 +83,18 @@
 
 typedef struct
 {
+	FunctionalState I2C_ErrorIntState;	/* Specifies BERR, ARLO, AF, OVR, PECERR, TIMEOUT, SMBALERT interrupt state */
+	FunctionalState I2C_EventIntState;	/* Specifies SB, ADDR, ADD10, STOPF, BTF, TXE, RXNE interrupt state */
+	FunctionalState I2C_BufferIntState;	/* Specifies TXE or RXNE interrupt state when they are set*/
+}I2C_IntState_t;
+
+typedef struct
+{
   uint32 I2C_ClockSpeed;          /* Specifies the clock frequency.
                                        This parameter must be set to a value lower than 400kHz */
 
   uint16 I2C_Mode;                /* Specifies the I2C mode. */
+
   uint16 I2C_DutyCycle;           /* Specifies the I2C fast mode duty cycle.*/
 
   uint16 I2C_AddressLength; 	  /* Specifies if 7-bit or 10-bit address is acknowledged. */
@@ -100,6 +108,14 @@ typedef struct
                                        This parameter can be a 7-bits . */
 
   FunctionalState I2C_Ack;        /*!< Enables or disables the acknowledgement. */
+
+  FunctionalState I2C_GeneralCall;	/* Specifies General call */
+
+  FunctionalState I2C_DMA;			/* Specifies DMA requests state */
+
+  I2C_IntState_t I2C_Interrupts;	/* Specifies I2C interrupts states */
+
+  FunctionalState I2C_InitialState;	/* Specifies initail state for selected I2C */
 
 }I2C_InitTypeDef;
 
@@ -144,5 +160,14 @@ Error_Status I2C_xGenerateStop(I2C_TypeDef* I2Cx, FunctionalState Copy_xStartSta
 /************************************************************************************************************* */
 
 Flag_Status I2C_xGetFlagStatus(I2C_TypeDef* I2Cx, uint32 Copy_u32Flag);
+/************************************************************************************************************* */
+
+Flag_Status I2C_xIsBusy(I2C_TypeDef *I2Cx);
+/************************************************************************************************************* */
+
+Flag_Status I2C_xSlaveCheckAddressMatch(I2C_TypeDef* I2Cx);
+/************************************************************************************************************* */
+
+Error_Status I2C_xCnfgInterrupts(I2C_TypeDef *I2Cx, I2C_IntState_t *I2C_IntState);
 
 #endif /* I2C_INTEFACE_H_ */

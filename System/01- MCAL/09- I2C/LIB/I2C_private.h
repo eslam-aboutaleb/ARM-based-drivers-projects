@@ -86,5 +86,6 @@ static Error_Status I2C_xSetClkSettings(I2C_TypeDef* I2Cx , uint32 Copy_u32Clock
 static Error_Status I2C_xSetMode(I2C_TypeDef* I2Cx , uint16 Copy_u16Mode);
 static Error_Status I2C_xSetAddress1(I2C_TypeDef* I2Cx , uint16 Copy_u16Address , uint16 Copy_u16AddressLength);
 static Error_Status I2C_xSetAddress2(I2C_TypeDef* I2Cx , uint16 Copy_u16Address , uint16 Copy_u16DualMode);
+static Error_Status I2C_xCnfgDMA(I2C_TypeDef* I2Cx , FunctionalState Copy_xDMA_State);
 
 #endif /* I2C_PRIVATE_H_ */
