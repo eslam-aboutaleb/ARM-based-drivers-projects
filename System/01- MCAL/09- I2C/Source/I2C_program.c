@@ -20,8 +20,7 @@
 /************************************************************************************************************* */
 /* Public functions definitions */
 /************************************************************************************************************* */
-//#define MASTER				1
-#define SLAVE				1
+
 Error_Status I2C_xInit(I2C_TypeDef* I2Cx , I2C_InitTypeDef *pxI2C_Cnfg)
 {
 	Error_Status Local_xErrorStatus	=	E_NOK;
@@ -73,7 +72,7 @@ Flag_Status I2C_xIsBusy(I2C_TypeDef *I2Cx)
 
 	return Local_xFlagStatus;
 }
-void I2C_vInitStruct(I2C_InitTypeDef *pxI2C_Cnfg , uint16 Copy_u16NodeAdd)
+void I2C_vInitStruct(I2C_InitTypeDef *pxI2C_Cnfg, uint8 Copy_u8MasterSlave , uint16 Copy_u16NodeAdd)
 {
 	/*---------------- Reset I2C init structure parameters values ----------------*/
 	/* initialize the I2C_ClockSpeed member */
@@ -85,14 +84,19 @@ void I2C_vInitStruct(I2C_InitTypeDef *pxI2C_Cnfg , uint16 Copy_u16NodeAdd)
 	/* Initialize the I2C_OwnAddress1 member */
 	pxI2C_Cnfg->I2C_OwnAddress1		=	Copy_u16NodeAdd;
 	/* Initialize the I2C_Ack member */
-#ifdef SLAVE
-	pxI2C_Cnfg->I2C_Ack				=	ENABLE;
-	pxI2C_Cnfg->I2C_Interrupts.I2C_EventIntState	=	ENABLE;
-#endif
-
-#ifdef MASTER
-	pxI2C_Cnfg->I2C_Ack				=	DISABLE;
-#endif
+	if(Copy_u8MasterSlave == I2C_SLAVE)
+	{
+		pxI2C_Cnfg->I2C_Ack				=	ENABLE;
+		pxI2C_Cnfg->I2C_Interrupts.I2C_EventIntState	=	ENABLE;
+	}
+	else if(Copy_u8MasterSlave == I2C_MASTER)
+	{
+		pxI2C_Cnfg->I2C_Ack				=	DISABLE;
+	}
+	else
+	{
+		/* No Action */
+	}
 	/* Initialize the I2C_AcknowledgedAddress member */
 	pxI2C_Cnfg->I2C_AddressLength	=	I2C_ADDRESS_7BIT;
 	/* Initialize GCALL */
@@ -725,7 +729,7 @@ static Error_Status I2C_xCnfgDMA(I2C_TypeDef* I2Cx , FunctionalState Copy_xDMA_S
 }
 
 /************************************************************************************************************* */
-												/* I2C ISRs */
+/* I2C ISRs */
 /************************************************************************************************************* */
 void I2C1_EV_IRQHandler(void)
 {
