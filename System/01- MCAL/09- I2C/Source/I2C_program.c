@@ -18,7 +18,7 @@
 #include "I2C_config.h"
 
 /************************************************************************************************************* */
-/* Public functions definitions */
+									/* Public functions definitions */
 /************************************************************************************************************* */
 
 Error_Status I2C_xInit(I2C_TypeDef* I2Cx , I2C_InitTypeDef *pxI2C_Cnfg)
@@ -26,9 +26,10 @@ Error_Status I2C_xInit(I2C_TypeDef* I2Cx , I2C_InitTypeDef *pxI2C_Cnfg)
 	Error_Status Local_xErrorStatus	=	E_NOK;
 
 	/* Initialize I2C clock pin */
-	GPIO_vInitPortPin(I2C_Pins[0].I2C_Port,I2C_Pins[0].I2C_Pin,GPIO_PIN_ALF_OUTPUT_OPENDRAIN_MODE_10MHZ);
+	GPIO_vInitPortPin(I2C_Pins[I2C_SCL].I2C_Port,I2C_Pins[I2C_SCL].I2C_Pin,GPIO_PIN_ALF_OUTPUT_OPENDRAIN_MODE_50MHZ);
+
 	/* Initialize I2C SDA pin */
-	GPIO_vInitPortPin(I2C_Pins[1].I2C_Port,I2C_Pins[1].I2C_Pin,GPIO_PIN_ALF_OUTPUT_OPENDRAIN_MODE_10MHZ);
+	GPIO_vInitPortPin(I2C_Pins[I2C_SDA].I2C_Port,I2C_Pins[I2C_SDA].I2C_Pin,GPIO_PIN_ALF_OUTPUT_OPENDRAIN_MODE_50MHZ);
 
 	/* Make sure the I2C is disabled */
 	I2C_xSetState(I2Cx,DISABLE);
@@ -72,37 +73,43 @@ Flag_Status I2C_xIsBusy(I2C_TypeDef *I2Cx)
 
 	return Local_xFlagStatus;
 }
+
+/************************************************************************************************************* */
+
+/* Function to ease initialization of I2C struct with basic requirements */
 void I2C_vInitStruct(I2C_InitTypeDef *pxI2C_Cnfg, uint8 Copy_u8MasterSlave , uint16 Copy_u16NodeAdd)
 {
 	/*---------------- Reset I2C init structure parameters values ----------------*/
 	/* initialize the I2C_ClockSpeed member */
-	pxI2C_Cnfg->I2C_ClockSpeed		=	50000;
+	pxI2C_Cnfg->I2C_ClockSpeed							=	100000;
 	/* Initialize the I2C_Mode member */
-	pxI2C_Cnfg->I2C_Mode			=	I2C_MODE_I2C;
+	pxI2C_Cnfg->I2C_Mode								=	I2C_MODE_I2C;
 	/* Initialize the I2C_DutyCycle member */
-	pxI2C_Cnfg->I2C_DutyCycle		=	I2C_DUTY_CYCLE_2;
+	pxI2C_Cnfg->I2C_DutyCycle							=	I2C_DUTY_CYCLE_2;
 	/* Initialize the I2C_OwnAddress1 member */
-	pxI2C_Cnfg->I2C_OwnAddress1		=	Copy_u16NodeAdd;
+	pxI2C_Cnfg->I2C_OwnAddress1							=	Copy_u16NodeAdd;
+
 	/* Initialize the I2C_Ack member */
 	if(Copy_u8MasterSlave == I2C_SLAVE)
 	{
-		pxI2C_Cnfg->I2C_Ack				=	ENABLE;
+		pxI2C_Cnfg->I2C_Ack								=	ENABLE;
 		pxI2C_Cnfg->I2C_Interrupts.I2C_EventIntState	=	ENABLE;
 	}
 	else if(Copy_u8MasterSlave == I2C_MASTER)
 	{
-		pxI2C_Cnfg->I2C_Ack				=	DISABLE;
+		pxI2C_Cnfg->I2C_Ack								=	DISABLE;
 	}
 	else
 	{
 		/* No Action */
 	}
+
 	/* Initialize the I2C_AcknowledgedAddress member */
-	pxI2C_Cnfg->I2C_AddressLength	=	I2C_ADDRESS_7BIT;
+	pxI2C_Cnfg->I2C_AddressLength						=	I2C_ADDRESS_7BIT;
 	/* Initialize GCALL */
-	pxI2C_Cnfg->I2C_GeneralCall		=	DISABLE;
+	pxI2C_Cnfg->I2C_GeneralCall							=	DISABLE;
 	/* initial state for I2C */
-	pxI2C_Cnfg->I2C_InitialState	=	ENABLE;
+	pxI2C_Cnfg->I2C_InitialState						=	ENABLE;
 }
 
 /************************************************************************************************************* */
@@ -631,9 +638,7 @@ static Error_Status I2C_xSetClkSettings(I2C_TypeDef* I2Cx , uint32 Copy_u32Clock
 	}
 
 	/* Assign the result to clock control register */
-	//	I2Cx->CCR = Local_u16Reseult;
-	I2Cx -> CCR |= 40;
-	SET_BIT(I2Cx->CR1 , 0);
+	I2Cx->CCR = Local_u16Reseult;
 
 	return Local_xErrorStatus;
 }
