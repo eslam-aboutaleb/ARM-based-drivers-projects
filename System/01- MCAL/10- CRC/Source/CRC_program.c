@@ -36,7 +36,7 @@ uint32 CRC_u32CalcCRC(const uint32 Copy_u32Data)
 
 /* ************************************************************************************************************ */
 
-Error_Status CRC_xCalcBlockCRC(uint32 *pBuffer,const uint32 Copy_u32BufferLength ,const uint32 *pu32DR_Val)
+Error_Status CRC_xCalcBlockCRC(uint32 *pBuffer,const uint32 Copy_u32BufferLength , uint32 *pu32DR_Val)
 {
 	/* Check if the buffer is valid */
 	if(pBuffer == NULL)
