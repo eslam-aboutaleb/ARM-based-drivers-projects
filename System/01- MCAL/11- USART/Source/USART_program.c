@@ -230,7 +230,7 @@ Error_Status USART_xConfigParityERR_Interrupt(USART_TypeDef *USARTx, FunctionalS
 
 /* ************************************************************************************************************ */
 
-void USART_vSendChar(USART_TypeDef *USARTx,uint8 data)
+void USART_vSendByte(USART_TypeDef *USARTx,uint8 data)
 {
 	/*Put data in the first 8 bits of data register*/
 	USARTx->DR=data;
@@ -244,7 +244,7 @@ void USART_vSendChar(USART_TypeDef *USARTx,uint8 data)
 
 /* ************************************************************************************************************ */
 
-uint8 USART_u8GetChar(USART_TypeDef *USARTx)
+uint8 USART_u8GetByte(USART_TypeDef *USARTx)
 {
 	/*Check if RXNE bit until it is not empty, Read data register not empty*/
 	while(USART_GetFlagStatus(USARTx,USART_FLAG_RXNE)==E_NOK)
@@ -257,7 +257,7 @@ uint8 USART_u8GetChar(USART_TypeDef *USARTx)
 
 /* ************************************************************************************************************ */
 
-Error_Status USART_vSendCharTimeOut(USART_TypeDef *USARTx,uint8 data , uint32 Copy_u32TimeOutMS)
+Error_Status USART_vSendByteTimeOut(USART_TypeDef *USARTx,uint8 data , uint32 Copy_u32TimeOutMS)
 {
 	Flag_Status Local_FlagStatus	=	E_OK;
 	/*Put data in the first 8 bits of data register*/
@@ -283,7 +283,7 @@ Error_Status USART_vSendCharTimeOut(USART_TypeDef *USARTx,uint8 data , uint32 Co
 
 /* ************************************************************************************************************ */
 
-Flag_Status USART_u8GetCharTimeOut(USART_TypeDef *USARTx , uint8 *pu8RecvData , uint32 Copy_u32TimeOutMS)
+Flag_Status USART_u8GetByteTimeOut(USART_TypeDef *USARTx , uint8 *pu8RecvData , uint32 Copy_u32TimeOutMS)
 {
 	Flag_Status Local_FlagStatus	=	E_OK;
 	USART_START_TIMEOUT_TICK();
@@ -311,53 +311,53 @@ Flag_Status USART_u8GetCharTimeOut(USART_TypeDef *USARTx , uint8 *pu8RecvData , 
 
 /* ************************************************************************************************************ */
 
-void UART_vWriteString(USART_TypeDef *USARTx ,uint8 * string)
+void UART_vWriteBuf(USART_TypeDef *USARTx ,uint8 * pu8MsgBuf)
 {
-	while(*string!='\0')
+	while(*pu8MsgBuf!='\0')
 	{
-		USART_vSendChar(USARTx,*string);
-		string++;
+		USART_vSendByte(USARTx,*pu8MsgBuf);
+		pu8MsgBuf++;
 	}
-	USART_vSendChar(USARTx,'\0');
+	USART_vSendByte(USARTx,'\0');
 }
 
 /* ************************************************************************************************************ */
 
-void UART_vReadString(USART_TypeDef *USARTx ,uint8 * string)
+void UART_vReadBuf(USART_TypeDef *USARTx ,uint8 * pu8RecvBuf)
 {
 	/*temporary variable as a buffer*/
 	uint8 data;
 	while(1)
 	{
-		data=USART_u8GetChar(USARTx);
-		/*assign data to the string*/
-		*string=data;
+		data=USART_u8GetByte(USARTx);
+		/*assign data to the Buffer*/
+		*pu8RecvBuf	=	data;
 		/*move to next address*/
 		if (data=='\0' || data=='\r' || data=='\n')
 		{
 			break;
 		}
-		string++;
+		pu8RecvBuf++;
 	}
 }
 
 /* ************************************************************************************************************ */
 
-void UART_vReadStringCustomEnd(USART_TypeDef *USARTx ,uint8 * string , uint8 Copy_EndChar)
+void UART_vReadBufCustomEnd(USART_TypeDef *USARTx ,uint8 * pu8RecvBuf , uint8 Copy_EndChar)
 {
 	/*temporary variable as a buffer*/
 	uint8 data;
 	while(1)
 	{
-		data=USART_u8GetChar(USARTx);
-		/*assign data to the string*/
-		*string=data;
+		data=USART_u8GetByte(USARTx);
+		/*assign data to the Buffer*/
+		*pu8RecvBuf	=	data;
 		/*move to next address*/
 		if (data == Copy_EndChar)
 		{
 			break;
 		}
-		string++;
+		pu8RecvBuf++;
 	}
 }
 
