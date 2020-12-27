@@ -14,7 +14,8 @@
 #include "RCC_config.h"
 
 static uint32 APB1Prescaler;
-
+static uint32 APB2Prescaler;
+static uint32 AHBPrescaler;
 /************************************************************************************************************* */
 /*Functions definitions*/
 /************************************************************************************************************* */
@@ -201,6 +202,33 @@ Error_Status RCC_xGetAPB1_Freq(uint32 *pu32Freq)
 	return E_OK;
 }
 /************************************************************************************************************* */
+Error_Status RCC_xGetAPB2_Freq(uint32 *pu32Freq)
+{
+	switch(APB2Prescaler)
+	{
+	case APB2_NOT_DEVIDED:
+		*pu32Freq	=	SYSTEM_CLOCK_FREQUENCY;
+		break;
+	case APB2_DIVIDED_BY_2:
+		*pu32Freq	=	SYSTEM_CLOCK_FREQUENCY / 2;
+		break;
+	case APB2_DIVIDED_BY_4:
+		*pu32Freq	=	SYSTEM_CLOCK_FREQUENCY / 4;
+		break;
+	case APB2_DIVIDED_BY_8:
+		*pu32Freq	=	SYSTEM_CLOCK_FREQUENCY / 8;
+		break;
+	case APB2_DIVIDED_BY_16:
+		*pu32Freq	=	SYSTEM_CLOCK_FREQUENCY / 16;
+		break;
+	default:
+		*pu32Freq	=	0;
+		return E_NOK;
+		break;
+	}
+	return E_OK;
+}
+/************************************************************************************************************* */
 
 static void RCC_vClockSource(uint8 Copy_xClock)
 {
@@ -357,9 +385,12 @@ static void RCC_vBus_Prescaler(RCC_Config_t *Copy_RCC_Config)
 	}
 	/* Save the APB1 prescaler */
 	APB1Prescaler	=	Copy_RCC_Config->Prescaler.ABP1_Prescaler;
+	APB2Prescaler	=	Copy_RCC_Config->Prescaler.ABP2_Prescaler;
+	AHBPrescaler	=	Copy_RCC_Config->Prescaler.AHB_Prescaler;
+
 	RCC->CFGR |= ((Copy_RCC_Config->Prescaler.AHB_Prescaler) << 4);
 	RCC->CFGR |= ((Copy_RCC_Config->Prescaler.ABP1_Prescaler) << 8);
-	RCC->CFGR |= ((Copy_RCC_Config->Prescaler.ABP1_Prescaler) << 11);
+	RCC->CFGR |= ((Copy_RCC_Config->Prescaler.ABP2_Prescaler) << 11);
 
 }
 

@@ -213,12 +213,24 @@ typedef struct
 /************************************************************************************************************* */
 
 void RCC_vClockInit(RCC_Config_t *RCC_Config);
-void RCC_vSetCLKPeripheral(uint8 Copy_xBus,RCC_Peripheral_t Copy_xPrephiral,uint8 Copy_xState);
-void RCC_vMCO(uint8 Copy_xMCO_Source);
-Error_Status RCC_xGetClkSource(void);
-Error_Status RCC_xSetADC_PreScaler(uint32 Copy_u32Prescaler);
-Error_Status RCC_xGetAPB1_Freq(uint32 *pu32Freq);
+/************************************************************************************************************* */
 
+void RCC_vSetCLKPeripheral(uint8 Copy_xBus,RCC_Peripheral_t Copy_xPrephiral,uint8 Copy_xState);
+/************************************************************************************************************* */
+
+void RCC_vMCO(uint8 Copy_xMCO_Source);
+/************************************************************************************************************* */
+
+Error_Status RCC_xGetClkSource(void);
+/************************************************************************************************************* */
+
+Error_Status RCC_xSetADC_PreScaler(uint32 Copy_u32Prescaler);
+/************************************************************************************************************* */
+
+Error_Status RCC_xGetAPB1_Freq(uint32 *pu32Freq);
+/************************************************************************************************************* */
+
+Error_Status RCC_xGetAPB2_Freq(uint32 *pu32Freq);
 
 
 
