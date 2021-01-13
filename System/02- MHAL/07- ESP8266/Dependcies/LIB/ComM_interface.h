@@ -63,5 +63,8 @@ Error_Status ComM_xInit(ComM_TypeDef *Com_CnfgSt);
 Error_Status ComM_xReceiveDataTillCharacter(ComM_TypeDef *Com_CnfgSt,uint8 LimitCharacter);
 
 Error_Status ComM_xSendDataTillCharacter(ComM_TypeDef *Com_CnfgSt,uint8 LimitCharacter);
+Error_Status ComM_xSendDataTillCharacterWithDelay(ComM_TypeDef *Com_CnfgSt,uint8 LimitCharacter , uint32 u32ByteDelay);
+Error_Status ComM_xReceiveDatawithStartEnd(ComM_TypeDef *Com_CnfgSt,uint8 StartChar,uint8 LimitCharacter);
+
 
 #endif

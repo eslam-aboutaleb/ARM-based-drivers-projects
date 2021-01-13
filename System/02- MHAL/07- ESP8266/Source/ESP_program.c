@@ -5,12 +5,14 @@
 #include "STD_TYPES.h"
 #include "BIT_MATH.h"
 
+#include "SYSTICK_interface.h"
 #include "ComM_interface.h"
 #include "Util_String_interface.h"
 
 #include "ESP_interface.h"
 #include "ESP_config.h"
 #include "ESP_private.h"
+
 
 Error_Status ESP_xInit(void)
 {
@@ -22,21 +24,21 @@ Error_Status ESP_xInit(void)
 	Local_xErrorStatus		=	E_NOK;
 
 	/* Restart */
-/*	while(Local_xErrorStatus != E_OK)
+	/*	while(Local_xErrorStatus != E_OK)
 	{
 		hEspCom.TimeOut = 300000;
 		Local_xErrorStatus	=	ESP_xSendCmd(ESP_RESTART);
 		Local_xErrorStatus	=	ESP_xValidateCmd((uint8*)"ready");
 	}
-*/
+	 */
 	Local_xErrorStatus		=	E_NOK;
 
 	/* Stop ECHO */
-	/*while(Local_xErrorStatus != E_OK)
+	while(Local_xErrorStatus != E_OK)
 	{
 		Local_xErrorStatus	=	ESP_xSendCmd(ESP_DISABLE_ECHO);
 		Local_xErrorStatus	=	ESP_xValidateCmd("OK");
-	}*/
+	}
 
 	Local_xErrorStatus		=	E_NOK;
 
@@ -70,7 +72,7 @@ Error_Status ESP_xWifiConnect(uint8* pu8Name , uint8* pu8Password)
 	while(Local_xErrorStatus != E_OK)
 	{
 		Local_xErrorStatus	=	ESP_xSendCmd(Local_u8WifiCmd);
-		Local_xErrorStatus	=	ESP_xValidateCmd((uint8*)"CONNECTED",(uint8*)"IP");
+		Local_xErrorStatus	=	ESP_xValidateCmd((uint8*)"CONNECTED");
 	}
 
 	return Local_xErrorStatus;
@@ -91,8 +93,7 @@ Error_Status ESP_xServerConnect(uint8 *pu8Protocol,uint8 *pu8ServerIP , uint8 *p
 
 	return Local_xErrorStatus;
 }
-
-
+#define ESP_GET_LINE_DELAY						20
 Flag_Status ESP_xGetData(uint8 * pu8URL ,uint8 *pu8RecvData)
 {
 	uint8 Local_u8SendLength[ESP_LENGH_BUF_SIZE]	=	{0};
@@ -105,22 +106,55 @@ Flag_Status ESP_xGetData(uint8 * pu8URL ,uint8 *pu8RecvData)
 
 	sprintf((uint8*)Local_u8SendURL , "GET %s\r\n",(uint8*)pu8URL);
 
-	Local_u16Length = UtilString_u16countStr(Local_u8SendURL);
+	Local_u16Length = strlen(Local_u8SendURL);
+	sprintf((uint8*)Local_u8SendLength , "AT+CIPSEND=%d\r\n",Local_u16Length );
 
+
+	hEspCom.TimeOut = 0;
+
+	Local_FlagStatus	=	ESP_xSendCmdWithDelay(Local_u8SendLength,1000);
+
+
+	STK_vSetBusyWait(ESP_GET_LINE_DELAY,SYSTICK_TICKS_MS);
+	ESP_xSendCmdWithDelay(Local_u8SendURL,1000);
+
+
+	hEspCom.TimeOut = 200000;
+	Local_FlagStatus	=	ComM_xReceiveDataTillCharacter(&hEspCom,'\0');
+
+	STK_vSetBusyWait(ESP_GET_LINE_DELAY,SYSTICK_TICKS_MS);
+	//ESP_vCloseConnection();
+	return Local_FlagStatus;
+}
+
+Flag_Status ESP_xGetDataCustomStart(uint8 * pu8URL ,uint8 Copy_u8StartChar ,uint8 *pu8RecvData)
+{
+	uint8 Local_u8SendLength[ESP_LENGH_BUF_SIZE]	=	{0};
+	uint8 Local_u8SendURL[ESP_URL_BUF_SIZE]			=	{0};
+	uint16 Local_u16Length							=	0;
+	Flag_Status Local_FlagStatus					=	E_NOK;
+
+	hEspCom.DataRx 									=	pu8RecvData;
+	hEspCom.TimeOut									=	500000;
+
+	sprintf((uint8*)Local_u8SendURL , "GET %s\r\n",(uint8*)pu8URL);
+
+	Local_u16Length = strlen(Local_u8SendURL);
 	sprintf((uint8*)Local_u8SendLength , "AT+CIPSEND=%d\r\n",Local_u16Length );
 
 	hEspCom.TimeOut = 0;
-	while(Local_FlagStatus != E_OK)
-	{
-		Local_FlagStatus	=	ESP_xSendCmd(Local_u8SendLength);
-		Local_FlagStatus	=	ESP_xValidateCmd((uint8*)"OK");
 
-	}
+	Local_FlagStatus	=	ESP_xSendCmdWithDelay(Local_u8SendLength,1000);
 
-	ESP_xSendCmd(Local_u8SendURL);
+	STK_vSetBusyWait(ESP_GET_LINE_DELAY,SYSTICK_TICKS_MS);
+	ESP_xSendCmdWithDelay(Local_u8SendURL,1000);
 
-	Local_FlagStatus	=	ComM_xReceiveDataTillCharacter(&hEspCom,'\0');
 
+	hEspCom.TimeOut = 200000;
+	Local_FlagStatus	=	ComM_xReceiveDatawithStartEnd(&hEspCom,Copy_u8StartChar,'\0');
+
+	STK_vSetBusyWait(ESP_GET_LINE_DELAY,SYSTICK_TICKS_MS);
+	//ESP_vCloseConnection();
 	return Local_FlagStatus;
 }
 
@@ -130,38 +164,54 @@ static Error_Status ESP_xSendCmd(uint8 *pu8DataBuffer)
 	Error_Status Local_xErrorStatus	=	E_OK;
 	hEspCom.DataTx		= pu8DataBuffer;
 
-	Local_xErrorStatus	=	ComM_xSendDataTillCharacter(&hEspCom , '\0');
+	Local_xErrorStatus	=	ComM_xSendDataTillCharacter(&hEspCom , '\n');
 
 	return Local_xErrorStatus;
 }
 
-static Flag_Status ESP_xValidateCmd(uint8* pu8Search,...)
+static Error_Status ESP_xSendCmdWithDelay(uint8 *pu8DataBuffer , uint32 u32ByteDelay)
+{
+	Error_Status Local_xErrorStatus	=	E_OK;
+	hEspCom.DataTx		= pu8DataBuffer;
+
+	Local_xErrorStatus	=	ComM_xSendDataTillCharacterWithDelay(&hEspCom , '\n',u32ByteDelay);
+
+	return Local_xErrorStatus;
+}
+
+static Flag_Status ESP_xValidateCmd(uint8* pu8Search)
 {
 	Flag_Status Local_FlagStatus				=	E_OK;
 	uint8 u8ResponseBuf[ESP_RESPONSE_BUF_SIZE]	=	{0};
-	uint8 *Local_pu8ptr 						=	NULL;
 	hEspCom.DataRx 								=	u8ResponseBuf;
 
-	va_list args;
-	va_start(args, pu8Search);
-	vsprintf((uint8*)u8ResponseBuf, (uint8*)pu8Search,args);
-
 	Local_FlagStatus	=	ComM_xReceiveDataTillCharacter(&hEspCom,'\0');
-	Local_pu8ptr = strtok((uint8*)u8ResponseBuf,' ');
 
-	while(Local_pu8ptr != NULL)
-	{
-		Local_FlagStatus	=	UtilString_xFindWord(Local_pu8ptr ,u8ResponseBuf);
-		Local_pu8ptr = strtok((uint8*)u8ResponseBuf,' ');
-		if(Local_FlagStatus == E_OK)
-		{
-			break;
-		}
-	}
+	Local_FlagStatus				=	E_NOK;
 
-	va_end(args);
+	Local_FlagStatus	=	UtilString_xFindWord(pu8Search ,u8ResponseBuf);
 
 	hEspCom.TimeOut = ESP_DEF_TIMEOUT;
 
 	return Local_FlagStatus;
+}
+
+
+#define ESP_SERVER_DISCONNECTION_TIMEOUT									30000
+void ESP_vCloseConnection(void)
+{
+	Flag_Status Local_FlagStatus	=	E_NOK;
+	uint32 u32TimeOut				=	0;
+
+	while(Local_FlagStatus	!= E_OK)
+	{
+		Local_FlagStatus	=	ESP_xSendCmdWithDelay(ESP_DISCONNECT_SERVER,1000);
+		Local_FlagStatus	=	ESP_xValidateCmd((uint8*)"CLOSED");
+
+		u32TimeOut++;
+		if(u32TimeOut >= ESP_SERVER_DISCONNECTION_TIMEOUT)
+		{
+			break;
+		}
+	}
 }

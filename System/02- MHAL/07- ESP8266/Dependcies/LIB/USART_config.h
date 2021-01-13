@@ -68,10 +68,8 @@ USART_Map_t USART3_Map[2]= {
 										/* Timer requirements */
 /* ************************************************************************************************************ */
 
-#include "Timer_interface.h"
+
 #define USART_USED_TIMER										TIMER1
 #define USART_TICK_MS											1
-#define USART_START_TIMEOUT_TICK()								TIM_vSetIntervalPeriodic(USART_USED_TIMER,USART_TICK_MS,TIM_TICKS_MS,USART_vTimeOutIncreament)
-#define USART_STOP_TIMEOUT_TICK()								TIM_vSetCounterState(TIMER1,Disable_CNT)
 
 #endif

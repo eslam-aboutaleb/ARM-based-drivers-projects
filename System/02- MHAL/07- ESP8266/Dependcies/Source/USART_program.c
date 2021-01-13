@@ -78,7 +78,7 @@ Error_Status USART_xInitStruct(USART_InitTypeDef *USART_CnfgSt)
 		return E_NOK;
 	}
 
-	USART_CnfgSt->USART_BaudRate				=	115200;
+	USART_CnfgSt->USART_BaudRate				=	9600;
 	USART_CnfgSt->USART_HardwareFlowControl		=	DISABLE;
 	USART_CnfgSt->USART_Parity					=	DISABLE;
 	USART_CnfgSt->USART_TXRX_State				=	USART_TRANSMITER_RECIEVER;
@@ -260,23 +260,21 @@ uint8 USART_u8GetByte(USART_TypeDef *USARTx)
 Error_Status USART_xSendByteTimeOut(USART_TypeDef *USARTx,uint8 data , uint32 Copy_u32TimeOutMS)
 {
 	Flag_Status Local_FlagStatus	=	E_OK;
+	uint32 u32TimeOut = 0;
 	/*Put data in the first 8 bits of data register*/
 	USARTx->DR=data;
 
-	USART_START_TIMEOUT_TICK();
 
 	/*Check if TXE bit, Transmit data register empty*/
 	while(USART_GetFlagStatus(USARTx,USART_FLAG_TXE)==E_NOK)
 	{
-		if(USART_u32GetTimeOut() >= Copy_u32TimeOutMS)
+		u32TimeOut++;
+		if(u32TimeOut >= Copy_u32TimeOutMS)
 		{
 			Local_FlagStatus	=	E_NOK;
 			break;
 		}
 	}
-
-	USART_STOP_TIMEOUT_TICK();
-	USART_vClearTimeOutCounter();
 
 	return Local_FlagStatus;
 }

@@ -4,6 +4,50 @@
 #include "Util_String_interface.h"
 #include "Util_String_private.h"
 
+void UtilString_vNumtoStr(sint32 Copy_s32Num,uint8 *pu8Buffer)
+{
+	sint32 		 Local_s32Index		= 	0;
+	sint32 		 Local_s32Copy 		= 	0;
+	Flag_Status  Local_xSignFlag	=	E_NOK;
+	uint8		 Local_xSignBorder	=	0;
+
+	/* Checks if the number is negative */
+	if(Copy_s32Num < 0)
+	{
+		/* Turn it to positive */
+		Copy_s32Num 	= -1 * Copy_s32Num;
+		/* Raise sign flag*/
+		Local_xSignFlag = E_OK;
+	}
+
+	/* Buffer to count number of digits in the number */
+	Local_s32Copy = Copy_s32Num;
+
+	while(Local_s32Copy > 0)
+	{
+		Local_s32Copy /=10;
+		Local_s32Index++;
+	}
+	/* If the number is negative */
+	if(Local_xSignFlag == E_OK)
+	{
+		/* Increase the index to be able to store sign in the buffer */
+		Local_s32Index++;
+		/* Assign the sign in the first index */
+		pu8Buffer[0] = '-';
+		/* Leave the first index empty for the sign */
+		Local_xSignBorder = 1;
+	}
+	pu8Buffer[Local_s32Index--] = '\0';
+	while(Local_s32Index >= Local_xSignBorder)
+	{
+		/* Convert the numbers to characters and store them in the buffer */
+		pu8Buffer[Local_s32Index--] = ((Copy_s32Num % 10) + '0');
+		Copy_s32Num /= 10;
+	}
+}
+
+
 Flag_Status UtilString_xFindWord(uint8 *pu8WordToFind , uint8 *pu8Line)
 {
 	uint16 Local_u16Index	=	0;
