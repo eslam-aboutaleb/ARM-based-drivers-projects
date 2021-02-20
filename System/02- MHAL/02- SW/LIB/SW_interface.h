@@ -21,7 +21,7 @@ typedef enum
 typedef enum
 {
 	SW_PULL_DOWN,
-	SW_PULLUP
+	SW_PULL_UP
 }tSW_Type;
 
 typedef enum

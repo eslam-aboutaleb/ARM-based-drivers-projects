@@ -7,8 +7,8 @@
 #include "STD_TYPES.h"
 #include "BIT_MATH.h"
 #include "GPIO_interface.h"
-#include "Switch_interface.h"
-#include "Switch_config.h"
+#include "SW_interface.h"
+#include "SW_config.h"
 
 /*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 /*Local data structures*/
@@ -30,48 +30,21 @@ static tSW_Info SWs_Info[SW_N_SWITCHES];
 
 void SW_vInit(tSW Copy_xSW,tSW_Type Copy_xSW_Type )
 {
-	uint8 LOC_Index = 0;
 
 	/* Initialize switches as inputs */
-	switch(Copy_xSW)
+
+	GPIO_vInitPortPin(SW_Map[Copy_xSW].SW_Port, SW_Map[Copy_xSW].SW_Pin, GPIO_IN);
+	if(Copy_xSW_Type == SW_PULL_UP)
 	{
-	case SW_PLUS:
-		GPIO_vInitPortPin(SW_PLUS_PORT_CR, SW_PLUS_PIN, GPIO_IN);
-		if(Copy_xSW_Type == SW_PULLUP)
-		{
-			GPIO_vWritePortPin(SW_PLUS_PORT_DR , SW_PLUS_PIN , GPIO_HIGH);
-		}
-		else
-		{
-			/* No Action */
-		}
-		break;
-	case SW_MINUS:
-		GPIO_vInitPortPin(SW_MINUS_PORT_CR, SW_MINUS_PIN, GPIO_IN);
-		if(Copy_xSW_Type == SW_PULLUP){
-			GPIO_vWritePortPin(SW_MINUS_PORT_CR, SW_MINUS_PIN,GPIO_HIGH);
-		}
-		else
-		{
-			/* No Action */
-		}
-		break;
-	default:
-		/*No action*/
-		break;
+		GPIO_vWritePortPin(SW_Map[Copy_xSW].SW_Port, SW_Map[Copy_xSW].SW_Pin , GPIO_HIGH);
 	}
 
-	/* Initialize switches info */
-	for (LOC_Index = 0; LOC_Index < SW_N_SWITCHES; LOC_Index++)
-	{
-		/* Initialize switch samples */
-		SWs_Info[LOC_Index].sw_samples[0] = SW_RELEASED_LEVEL;
-		SWs_Info[LOC_Index].sw_samples[1] = SW_RELEASED_LEVEL;
+	/* Initialize switch samples */
+	SWs_Info[Copy_xSW].sw_samples[0] = SW_RELEASED_LEVEL;
+	SWs_Info[Copy_xSW].sw_samples[1] = SW_RELEASED_LEVEL;
 
-		/* Initialize switch state */
-		SWs_Info[LOC_Index].sw_state = SW_RELEASED;
-
-	}
+	/* Initialize switch state */
+	SWs_Info[Copy_xSW].sw_state = SW_RELEASED;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
@@ -93,16 +66,8 @@ void SW_vUpdate(void)
 		/* Update switch samples */
 		SWs_Info[LOC_Index].sw_samples[0] = SWs_Info[LOC_Index].sw_samples[1];
 
-		if (LOC_Index == SW_PLUS)
-		{
-			SWs_Info[LOC_Index].sw_samples[1] = GPIO_u8ReadPortPin(SW_PLUS_PORT_DR, SW_PLUS_PIN);
-		} else if (LOC_Index == SW_MINUS)
-		{
-			SWs_Info[LOC_Index].sw_samples[1] = GPIO_u8ReadPortPin(SW_MINUS_PORT_DR, SW_MINUS_PIN);
-		} else
-		{
-			/* Do nothing should not be here !! */
-		}
+		SWs_Info[LOC_Index].sw_samples[1] = GPIO_u8ReadPortPin(SW_Map[LOC_Index].SW_Port, SW_Map[LOC_Index].SW_Pin);
+
 
 		/* Update switch state */
 		switch(SWs_Info[LOC_Index].sw_state)

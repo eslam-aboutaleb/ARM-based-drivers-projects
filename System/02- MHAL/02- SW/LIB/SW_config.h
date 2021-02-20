@@ -20,15 +20,16 @@
 #define SW_N_SAMPLES      (2)
 
 
-#define SW_N_SWITCHES     (2)
+#define SW_N_SWITCHES     (1)
 
-#define SW_MINUS_PORT_DR        (GPIOA)
-#define SW_MINUS_PORT_CR        (GPIOA)
-#define SW_MINUS_PIN            (GPIO_PIN_9)
+typedef struct{
+	GPIO_Port_t SW_Port;
+	GPIO_Pin_t SW_Pin;
+}SW_MapCnfg;
 
-#define SW_PLUS_PORT_DR         (GPIOA)
-#define SW_PLUS_PORT_CR         (GPIOA)
-#define SW_PLUS_PIN             (GPIO_PIN_8)
+SW_MapCnfg SW_Map[SW_N_SWITCHES]= {
+		{GPIOB,GPIO_PIN_0}
+};
 
 
 #endif
